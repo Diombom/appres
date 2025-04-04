@@ -1,9 +1,7 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const serverless = require('serverless-http'); // ✅ Added
-const { createClient } = require('@sanity/client');
 
 const app = express();
 
