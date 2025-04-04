@@ -1,59 +1,52 @@
-// /api/index.js
+'use strict';
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const serverless = require('serverless-http');
 
-// Init express
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Load environment variables (only for local dev)
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
-
-// Nodemailer configuration
+// Email transporter config
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT) || 465,
+  port: Number(process.env.EMAIL_PORT),
   secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
 });
 
-// Root route
+// Root endpoint
 app.get('/', (req, res) => {
   res.send('Hello from Express on Vercel');
 });
 
-// Test email route
+// Email test endpoint
 app.get('/test-email', async (req, res) => {
   try {
-    await transporter.sendMail({
+    const mail = await transporter.sendMail({
       from: `"Appointment System" <${process.env.EMAIL_USER}>`,
       to: process.env.ADMIN_EMAIL,
-      subject: 'Appointment Reschedule Request',
-      text: 'This is a test email from your Hostinger setup',
+      subject: 'Appointment Reschedule Test',
+      text: 'This is a test email from your Hostinger setup via Vercel.',
     });
-
-    console.log('Test email sent successfully');
+    console.log('✅ Test email sent:', mail.messageId);
     res.send('Test email sent successfully');
   } catch (error) {
-    console.error('Test email failed:', error);
+    console.error('❌ Email test failed:', error);
     res.status(500).send('Error sending test email');
   }
 });
 
-// Handle appointment submission
+// Appointment form submission endpoint
 app.post('/appointments', async (req, res) => {
+  console.log('📨 /appointments endpoint hit');
+
   try {
     const formData = req.body;
 
@@ -67,30 +60,34 @@ app.post('/appointments', async (req, res) => {
           <div style="background: #f7fafc; padding: 20px; border-radius: 8px;">
             <p><strong>Name:</strong> ${formData.fullName}</p>
             <p><strong>Email:</strong> ${formData.email}</p>
-            <p><strong>Phone:</strong> <a href="https://wa.me/${formData.phone}">${formData.phone}</a></p>
+            <p><strong>Phone:</strong><a href="https://wa.me/${formData.phone}"> ${formData.phone}</a></p>
             <p><strong>Current Appointment:</strong> ${new Date(formData.currentDate).toLocaleString()}</p>
             <p><strong>New Appointment:</strong> ${new Date(formData.newDate).toLocaleDateString()} at ${formData.time}</p>
             <p><strong>Location:</strong> ${formData.location}</p>
           </div>
-          <p style="margin-top: 20px; color: #718096;">This message was sent from your website's appointment system.</p>
+          <p style="margin-top: 20px; color: #718096;">
+            This message was sent from your website's appointment system.
+          </p>
         </div>
       `,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({
+    console.log('✅ Appointment email sent');
+    return res.status(200).json({
       success: true,
       message: 'Appointment request submitted successfully!',
     });
   } catch (error) {
-    console.error('Submission error:', error);
-    res.status(500).json({
+    console.error('❌ Submission error:', error);
+    return res.status(500).json({
       success: false,
       message: 'Error submitting appointment request',
+      error: error.message, // Optional: Include error details for debugging
     });
   }
 });
 
-// ✅ Export as a serverless function
-module.exports = serverless(app);
+module.exports = app;
+module.exports.handler = serverless(app);
