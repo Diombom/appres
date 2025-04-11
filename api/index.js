@@ -53,7 +53,7 @@ app.post('/appointments', async (req, res) => {
     const mailOptions = {
       from: `"Appointment System" <${process.env.EMAIL_USER}>`,
       to: process.env.ADMIN_EMAIL,
-      subject: 'New Appointment Request',
+      subject: 'Rescheduling Dates - New Appointment Request',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2d3748;">New Appointment Request Received</h2>
