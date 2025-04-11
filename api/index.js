@@ -61,7 +61,7 @@ app.post('/appointments', async (req, res) => {
             <p><strong>Name:</strong> ${formData.fullName}</p>
             <p><strong>Email:</strong> ${formData.email}</p>
             <p><strong>Phone:</strong><a href="https://wa.me/${formData.phone}"> ${formData.phone}</a></p>
-            <p><strong>Current Appointment:</strong> ${new Date(formData.currentDate).toLocaleString()}</p>
+            <p><strong>Has online visa portal:</strong> ${formData.currentDate}</p>
             <p><strong>New Appointment:</strong> ${new Date(formData.newDate).toLocaleDateString()} at ${formData.time}</p>
             <p><strong>Location:</strong> ${formData.location}</p>
           </div>
